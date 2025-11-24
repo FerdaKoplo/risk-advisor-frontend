@@ -13,4 +13,13 @@ class SolutionModel {
     required this.riskLevel,
   });
 
+  factory SolutionModel.fromJson(Map<String, dynamic> json) {
+    return SolutionModel(
+      id: json['id'].toString(),
+      title: json['title'],
+      description: json['description'],
+      category: json['category'],
+      riskLevel: int.tryParse(json['riskLevel'].toString()) ?? 0,
+    );
+  }
 }

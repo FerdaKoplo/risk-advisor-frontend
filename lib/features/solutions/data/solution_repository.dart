@@ -1,32 +1,21 @@
+import '../../../core/services/api_service.dart';
 import 'solution_model.dart';
+import 'risk_request_model.dart';
 
 class SolutionRepository {
+  final ApiService api;
 
-  Future<List<SolutionModel>> getSolutions() async {
-   await Future.delayed(Duration(seconds: 1)); // biar kayak loading
+  SolutionRepository(this.api);
 
-    return [
-      SolutionModel(
-        id: "1",
-        title: "Mitigasi Risiko Keuangan",
-        description: "Pantau arus kas dan lakukan diversifikasi aset.",
-        category: "Finansial",
-        riskLevel: 3,
-      ),
-      SolutionModel(
-        id: "2",
-        title: "Pemantauan Aset",
-        description: "Gunakan sistem monitoring real-time untuk aset penting.",
-        category: "Operasional",
-        riskLevel: 4,
-      ),
-      SolutionModel(
-        id: "3",
-        title: "Pencegahan Keamanan",
-        description: "Lakukan audit keamanan secara berkala.",
-        category: "Security",
-        riskLevel: 2,
-      ),
-    ];
+  // Kirim input user → backend → dapat solusi
+  Future<List<SolutionModel>> submitRisk(RiskRequestModel req) async {
+    final res = await api.post('/solutions/recommend', req.toJson());
+
+    final data = res.data; // BODY JSON
+
+    return (data['solutions'] as List)
+        .map((item) => SolutionModel.fromJson(item))
+        .toList();
   }
 }
+
