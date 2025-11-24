@@ -15,6 +15,8 @@ import '../../prediction_ai/presentation/risk_factors_widget.dart';
 import '../../../core/services/notification_service.dart';
 
 import '../../solutions/presentation/solution_page.dart';
+import '../../solutions/presentation/risk_form_page.dart';
+
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -209,7 +211,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const SolutionPage(),
+                          builder: (context) => const RiskFormPage(),
                         ),
                       );
                     },
