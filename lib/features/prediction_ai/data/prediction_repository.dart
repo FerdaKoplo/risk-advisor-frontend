@@ -9,7 +9,13 @@ class PredictionRepository {
 
   Future<AiPredictionModel> fetchPrediction() async {
     try {
-      final Response resp = await _api.get('/api/risk/ai-prediction');
+      final resp = await _api.post("/api/ai/safety-advice", {
+        "employee_id": "E123",
+        "location_area": "Warehouse 1",
+        "prob_input": "medium",
+        "sev_input": "high",
+        "comp_input": "low"
+      });
 
       if (resp.statusCode == 200 && resp.data != null) {
         final data = Map<String, dynamic>.from(resp.data);

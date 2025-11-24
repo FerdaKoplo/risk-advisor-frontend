@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:risk_advisor_management/features/dashboard/data/trend_model.dart';
+import 'package:risk_advisor_management/features/dashboard/data/trend_repository.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/constants/styles.dart';
 import '../../../core/constants/colors.dart';
@@ -13,7 +15,6 @@ import '../../prediction_ai/data/ai_prediction_model.dart';
 import '../../prediction_ai/presentation/risk_factors_widget.dart';
 
 import '../../../core/services/notification_service.dart';
-
 import '../../solutions/presentation/solution_page.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -24,13 +25,15 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  // DASHBOARD
   late final DashboardRepository _repo;
   late Future<DashboardModel> _future;
 
-  // AI PREDICTION (use the actual model type name)
   late final PredictionRepository _predictionRepo;
   late Future<AiPredictionModel> _predictionFuture;
+
+  late final TrendRepository _trendRepository;
+  late Future<List<TrendModel>> _trendFuture;
+
 
   @override
   void initState() {
@@ -43,12 +46,16 @@ class _DashboardPageState extends State<DashboardPage> {
     // AI Prediction
     _predictionRepo = PredictionRepository();
     _predictionFuture = _predictionRepo.fetchPrediction();
+
+    _trendRepository = TrendRepository();
+    _trendFuture = _trendRepository.fetchDailyTrend();
   }
 
   Future<void> _refresh() async {
     setState(() {
       _future = _repo.fetchDashboard();
       _predictionFuture = _predictionRepo.fetchPrediction();
+      _trendFuture = _trendRepository.fetchDailyTrend();
     });
   }
 
@@ -56,7 +63,15 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Dashboard Risiko')),
+      appBar: AppBar(
+        title: const Text('Dashboard Risiko'),
+        backgroundColor: Colors.indigoAccent,
+        titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold
+        ),
+      ),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: SingleChildScrollView(
@@ -87,15 +102,24 @@ class _DashboardPageState extends State<DashboardPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   /// -------------------------
-                  /// RISK METER
+                  /// SKOR RISIKO
                   /// -------------------------
                   AppCard(
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const SizedBox(height: 12),
+                        Text(
+                          "Skor Risiko",
+                          style: AppStyles.title,
+                        ),
+                        const SizedBox(height: 12),
+                        // Use the RiskMeterWidget
                         RiskMeterWidget(
-                          riskPercent: model.riskPercent,
+                          riskPercent: model.riskScore,
                           size: 160,
                         ),
+                        const SizedBox(height: 12),
                       ],
                     ),
                   ),
@@ -105,102 +129,121 @@ class _DashboardPageState extends State<DashboardPage> {
                   /// -------------------------
                   /// TEST NOTIFIKASI
                   /// -------------------------
-                  ElevatedButton(
-                    onPressed: () {
-                      Notifikasi.show(
-                        title: "Percobaan",
-                        body: "Notifikasi berhasil!",
-                      );
-                    },
-                    child: const Text("Test Notifikasi"),
-                  ),
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     Notifikasi.show(
+                  //       title: "Percobaan",
+                  //       body: "Notifikasi berhasil!",
+                  //     );
+                  //   },
+                  //   child: const Text("Test Notifikasi"),
+                  // ),
 
-                  const SizedBox(height: 20),
+                  // const SizedBox(height: 20),
 
                   /// -------------------------
                   /// AI PREDICTION
                   /// -------------------------
-                  Text('AI Risk Prediction', style: AppStyles.title),
-                  const SizedBox(height: 10),
+                  // Text('AI Risk Prediction', style: AppStyles.title),
+                  // const SizedBox(height: 10),
 
-                  FutureBuilder<AiPredictionModel>(
-                    future: _predictionFuture,
-                    builder: (context, snapAI) {
-                      if (snapAI.connectionState == ConnectionState.waiting) {
+                  // FutureBuilder<AiPredictionModel>(
+                  //   future: _predictionFuture,
+                  //   builder: (context, snapAI) {
+                  //     if (snapAI.connectionState == ConnectionState.waiting) {
+                  //       return AppCard(
+                  //         child: SizedBox(
+                  //           height: 80,
+                  //           child: Center(
+                  //             child: CircularProgressIndicator(
+                  //               color: AppColors.primary,
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       );
+                  //     }
+                  //
+                  //     if (snapAI.hasError) {
+                  //       return AppCard(
+                  //         child: Padding(
+                  //           padding: const EdgeInsets.all(12),
+                  //           child: Text(
+                  //             'Gagal memuat prediksi AI',
+                  //             style: AppStyles.body,
+                  //           ),
+                  //         ),
+                  //       );
+                  //     }
+                  //
+                  //     if (!snapAI.hasData) {
+                  //       return AppCard(
+                  //         child: Padding(
+                  //           padding: const EdgeInsets.all(12),
+                  //           child: Text(
+                  //             'Tidak ada data AI',
+                  //             style: AppStyles.body,
+                  //           ),
+                  //         ),
+                  //       );
+                  //     }
+                  //
+                  //     final prediction = snapAI.data!;
+                  //
+                  //     return AppCard(
+                  //       child: Column(
+                  //         crossAxisAlignment: CrossAxisAlignment.start,
+                  //         children: [
+                  //           Text(
+                  //             "Skor Risiko AI: ${prediction.riskPercent}", // bisa ganti menjadi prediction.score jika backend menyediakan
+                  //             style: AppStyles.title,
+                  //           ),
+                  //           const SizedBox(height: 12),
+                  //           RiskFactorsWidget(factors: prediction.factors),
+                  //         ],
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
+
+                  FutureBuilder<List<TrendModel>>(
+                    future: _trendFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
                         return AppCard(
                           child: SizedBox(
-                            height: 80,
+                            height: 160,
                             child: Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.primary,
-                              ),
+                              child: CircularProgressIndicator(color: AppColors.primary),
                             ),
                           ),
                         );
-                      }
-
-                      if (snapAI.hasError) {
+                      } else if (snapshot.hasError || !snapshot.hasData) {
                         return AppCard(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Text(
-                              'Gagal memuat prediksi AI',
-                              style: AppStyles.body,
-                            ),
+                          child: SizedBox(
+                            height: 160,
+                            child: Center(child: Text('Gagal memuat trend', style: AppStyles.body)),
                           ),
                         );
                       }
 
-                      if (!snapAI.hasData) {
-                        return AppCard(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Text(
-                              'Tidak ada data AI',
-                              style: AppStyles.body,
-                            ),
-                          ),
-                        );
-                      }
-
-                      final prediction = snapAI.data!;
-
+                      final trendData = snapshot.data!;
                       return AppCard(
+
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Show riskPercent (int) from AiPredictionModel
-                            Text(
-                              "Skor Risiko: ${prediction.riskPercent}%",
-                              style: AppStyles.title,
+                            Text("Tingkat Resiko Minggu Ini",
+                                style: TextStyle(fontSize: 18,
+                                    fontWeight: FontWeight.bold)
                             ),
-                            const SizedBox(height: 12),
-                            RiskFactorsWidget(factors: prediction.factors),
+                            RiskTrendChart(
+                              data: trendData,
+                              height: 160,
+                            ),
                           ],
-                        ),
+                        )
                       );
                     },
                   ),
-
-                  const SizedBox(height: 20),
-
-                  /// -------------------------
-                  /// TREND CHART
-                  /// -------------------------
-                  Text('Tren Risiko (Harian)', style: AppStyles.title),
-                  const SizedBox(height: 8),
-
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RiskTrendChart(data: model.dailyTrend, height: 160),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
                   /// -------------------------
                   /// BUTTON NAVIGASI SOLUSI
                   /// -------------------------
